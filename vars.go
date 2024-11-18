@@ -1,12 +1,9 @@
 package aini
 
 import (
-	"encoding/json"
-	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -36,14 +33,14 @@ func (inventory *InventoryData) doAddVars(path string, lowercased bool) error {
 }
 
 type fileVarsGetter interface {
-	getFileVars() map[string]string
+	getFileVars() map[string]interface{}
 }
 
-func (host *Host) getFileVars() map[string]string {
+func (host *Host) getFileVars() map[string]interface{} {
 	return host.FileVars
 }
 
-func (group *Group) getFileVars() map[string]string {
+func (group *Group) getFileVars() map[string]interface{} {
 	return group.FileVars
 }
 
@@ -75,7 +72,7 @@ func walk(root string, subdir string, m map[string]fileVarsGetter, lowercased bo
 }
 
 func getWalkerFn(root string, m map[string]fileVarsGetter, lowercased bool) fs.WalkDirFunc {
-	var currentVars map[string]string
+	var currentVars map[string]interface{}
 	return func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return nil
@@ -100,7 +97,7 @@ func getWalkerFn(root string, m map[string]fileVarsGetter, lowercased bool) fs.W
 	}
 }
 
-func addVarsFromFile(currentVars map[string]string, path string) error {
+func addVarsFromFile(currentVars map[string]interface{}, path string) error {
 	if currentVars == nil {
 		// Group or Host doesn't exist in the inventory, ignoring
 		return nil
@@ -118,20 +115,23 @@ func addVarsFromFile(currentVars map[string]string, path string) error {
 		return nil
 	}
 	for k, v := range vars {
-		switch v := v.(type) {
-		case string:
-			currentVars[k] = v
-		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
-			currentVars[k] = fmt.Sprint(v)
-		case bool:
-			currentVars[k] = strconv.FormatBool(v)
-		default:
-			data, err := json.Marshal(v)
-			if err != nil {
-				return err
+		currentVars[k] = v
+		/*
+			switch v := v.(type) {
+			case string:
+				currentVars[k] = v
+			case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+				currentVars[k] = fmt.Sprint(v)
+			case bool:
+				currentVars[k] = strconv.FormatBool(v)
+			default:
+				data, err := json.Marshal(v)
+				if err != nil {
+					return err
+				}
+				currentVars[k] = string(data)
 			}
-			currentVars[k] = string(data)
-		}
+		*/
 	}
 	return nil
 }
@@ -150,7 +150,7 @@ func (inventory *InventoryData) reconcileVars() {
 		group.AllFileVars = nil
 	}
 	for _, group := range inventory.Groups {
-		group.Vars = make(map[string]string)
+		group.Vars = make(map[string]interface{})
 		group.populateInventoryVars()
 		group.populateFileVars()
 		// At this point we already "populated" all parent's inventory and file vars
@@ -159,7 +159,7 @@ func (inventory *InventoryData) reconcileVars() {
 		addValues(group.Vars, group.AllFileVars)
 	}
 	for _, host := range inventory.Hosts {
-		host.Vars = make(map[string]string)
+		host.Vars = make(map[string]interface{})
 		for _, group := range GroupMapListValues(host.DirectGroups) {
 			addValues(host.Vars, group.Vars)
 		}
@@ -172,7 +172,7 @@ func (group *Group) populateInventoryVars() {
 	if group.AllInventoryVars != nil {
 		return
 	}
-	group.AllInventoryVars = make(map[string]string)
+	group.AllInventoryVars = make(map[string]interface{})
 	for _, parent := range GroupMapListValues(group.DirectParents) {
 		parent.populateInventoryVars()
 		addValues(group.AllInventoryVars, parent.AllInventoryVars)
@@ -184,7 +184,7 @@ func (group *Group) populateFileVars() {
 	if group.AllFileVars != nil {
 		return
 	}
-	group.AllFileVars = make(map[string]string)
+	group.AllFileVars = make(map[string]interface{})
 	for _, parent := range GroupMapListValues(group.DirectParents) {
 		parent.populateFileVars()
 		addValues(group.AllFileVars, parent.AllFileVars)

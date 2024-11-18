@@ -20,34 +20,34 @@ type InventoryData struct {
 // Group represents ansible group
 type Group struct {
 	Name     string
-	Vars     map[string]string
+	Vars     map[string]interface{}
 	Hosts    map[string]*Host
 	Children map[string]*Group
 	Parents  map[string]*Group
 
 	DirectParents map[string]*Group
 	// Vars set in inventory
-	InventoryVars map[string]string
+	InventoryVars map[string]interface{}
 	// Vars set in group_vars
-	FileVars map[string]string
+	FileVars map[string]interface{}
 	// Projection of all parent inventory variables
-	AllInventoryVars map[string]string
+	AllInventoryVars map[string]interface{}
 	// Projection of all parent group_vars variables
-	AllFileVars map[string]string
+	AllFileVars map[string]interface{}
 }
 
 // Host represents ansible host
 type Host struct {
 	Name   string
 	Port   int
-	Vars   map[string]string
+	Vars   map[string]interface{}
 	Groups map[string]*Group
 
 	DirectGroups map[string]*Group
 	// Vars set in inventory
-	InventoryVars map[string]string
+	InventoryVars map[string]interface{}
 	// Vars set in host_vars
-	FileVars map[string]string
+	FileVars map[string]interface{}
 }
 
 // ParseFile parses Inventory represented as a file

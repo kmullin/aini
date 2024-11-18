@@ -74,14 +74,14 @@ func main() {
 type ResultHost struct {
 	Name   string
 	Groups []string
-	Vars   map[string]string
+	Vars   map[string]interface{}
 }
 type ResultGroup struct {
 	Name        string
 	Parents     []string
 	Descendants []string
 	Hosts       []string
-	Vars        map[string]string
+	Vars        map[string]interface{}
 }
 
 func exportResult(hostMap map[string]*aini.Host, groupMap map[string]*aini.Group) any {

@@ -151,20 +151,20 @@ func MatchGroups(groups map[string]*Group, pattern string) (map[string]*Group, e
 }
 
 // MatchVars looks for vars that match the pattern
-func (group *Group) MatchVars(pattern string) (map[string]string, error) {
+func (group *Group) MatchVars(pattern string) (map[string]interface{}, error) {
 	return MatchVars(group.Vars, pattern)
 }
 
 // MatchVars looks for vars that match the pattern
-func (host *Host) MatchVars(pattern string) (map[string]string, error) {
+func (host *Host) MatchVars(pattern string) (map[string]interface{}, error) {
 	return MatchVars(host.Vars, pattern)
 }
 
 // MatchVars looks for vars that match the pattern
-func MatchVars(vars map[string]string, pattern string) (map[string]string, error) {
-	matchedVars := make(map[string]string)
+func MatchVars(vars map[string]interface{}, pattern string) (map[string]interface{}, error) {
+	matchedVars := make(map[string]interface{})
 	for k, v := range vars {
-		m, err := path.Match(pattern, v)
+		m, err := path.Match(pattern, v.(string))
 		if err != nil {
 			return nil, err
 		}

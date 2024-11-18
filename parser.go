@@ -117,7 +117,7 @@ func (inventory *InventoryData) getHosts(line string, group *Group) (map[string]
 	result := make(map[string]*Host, len(hostnames))
 	for _, hostname := range hostnames {
 		params := parts[1:]
-		vars := make(map[string]string, len(params))
+		vars := make(map[string]interface{}, len(params))
 		for _, param := range params {
 			k, v, err := splitKV(param)
 			if err != nil {

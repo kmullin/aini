@@ -6,9 +6,9 @@ package aini
 // After initial inventory file processing, only direct relationships are set.
 //
 // This method:
-//   * (re)sets Children and Parents for hosts and groups
-//   * ensures that mandatory groups exist
-//   * calculates variables for hosts and groups
+//   - (re)sets Children and Parents for hosts and groups
+//   - ensures that mandatory groups exist
+//   - calculates variables for hosts and groups
 func (inventory *InventoryData) Reconcile() {
 	// Clear all computed data
 	for _, host := range inventory.Hosts {
@@ -63,7 +63,7 @@ func (inventory *InventoryData) Reconcile() {
 
 func (host *Host) clearData() {
 	host.Groups = make(map[string]*Group)
-	host.Vars = make(map[string]string)
+	host.Vars = make(map[string]interface{})
 	for _, group := range host.DirectGroups {
 		group.clearData(make(map[string]struct{}, len(host.Groups)))
 	}
@@ -76,7 +76,7 @@ func (group *Group) clearData(visited map[string]struct{}) {
 	group.Hosts = make(map[string]*Host)
 	group.Parents = make(map[string]*Group)
 	group.Children = make(map[string]*Group)
-	group.Vars = make(map[string]string)
+	group.Vars = make(map[string]interface{})
 	group.AllInventoryVars = nil
 	group.AllFileVars = nil
 	visited[group.Name] = struct{}{}
@@ -93,13 +93,13 @@ func (inventory *InventoryData) getOrCreateGroup(groupName string) *Group {
 	g := &Group{
 		Name:     groupName,
 		Hosts:    make(map[string]*Host),
-		Vars:     make(map[string]string),
+		Vars:     make(map[string]interface{}),
 		Children: make(map[string]*Group),
 		Parents:  make(map[string]*Group),
 
 		DirectParents: make(map[string]*Group),
-		InventoryVars: make(map[string]string),
-		FileVars:      make(map[string]string),
+		InventoryVars: make(map[string]interface{}),
+		FileVars:      make(map[string]interface{}),
 	}
 	inventory.Groups[groupName] = g
 	return g
@@ -114,26 +114,26 @@ func (inventory *InventoryData) getOrCreateHost(hostName string) *Host {
 		Name:   hostName,
 		Port:   22,
 		Groups: make(map[string]*Group),
-		Vars:   make(map[string]string),
+		Vars:   make(map[string]interface{}),
 
 		DirectGroups:  make(map[string]*Group),
-		InventoryVars: make(map[string]string),
-		FileVars:      make(map[string]string),
+		InventoryVars: make(map[string]interface{}),
+		FileVars:      make(map[string]interface{}),
 	}
 	inventory.Hosts[hostName] = h
 	return h
 }
 
 // addValues fills `to` map with values from `from` map
-func addValues(to map[string]string, from map[string]string) {
+func addValues(to map[string]interface{}, from map[string]interface{}) {
 	for k, v := range from {
 		to[k] = v
 	}
 }
 
 // copyStringMap creates a non-deep copy of the map
-func copyStringMap(from map[string]string) map[string]string {
-	result := make(map[string]string, len(from))
+func copyStringMap(from map[string]interface{}) map[string]interface{} {
+	result := make(map[string]interface{}, len(from))
 	addValues(result, from)
 	return result
 }
